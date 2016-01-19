@@ -106,7 +106,6 @@ function RoguelikeLevel(config) {
   // Convenient list of rooms
   this.world = null;
   this.rooms = {};
-  this.halls = {};
   this.doors = {};
   this.enter = null;
   this.exit = null;
@@ -125,7 +124,6 @@ RoguelikeLevel.prototype.build = function() {
   return {
     world: this.world,
     rooms: this.rooms,
-    halls: this.halls,
     doors: this.doors,
     enter: this.enter,
     exit: this.exit,
@@ -429,7 +427,7 @@ RoguelikeLevel.prototype.addEnterExit = function() {
   this.exit = {
     x: exit.x,
     y: exit.y,
-    room_id: enter_room_id
+    room_id: exit_room_id
   };
 };
 
