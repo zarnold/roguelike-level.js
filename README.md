@@ -44,14 +44,14 @@ var result = level.build();
 
 ## Example Output
 
-TYPE  | ID
-------+---
-VOID  | 0
-FLOOR | 1
-WALL  | 2
-DOOR  | 3
-ENTER | 5
-EXIT  | 6
+|TYPE  | ID |
+|------|----|
+|VOID  | 0  |
+|FLOOR | 1  |
+|WALL  | 2  |
+|DOOR  | 3  |
+|ENTER | 5  |
+|EXIT  | 6  |
 
 ```json
 {
