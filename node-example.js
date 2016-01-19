@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Visualizes level generation output using Node in the console
  */
