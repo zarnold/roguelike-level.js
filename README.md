@@ -108,3 +108,12 @@ var result = level.build();
     ]
 }
 ```
+
+## TODO
+
+* Generate doors between rooms which happen to be touching but not slid together
+* Generate hallways between non-touching rooms, complete with doors
+* Generate hidden rooms (doors will have `hidden:true` attribute)
+* Generate rooms which aren't rectangular (round, blobs)
+* Calculate the distance of every room from entrance/exit
+* Generate special terrain types, e.g. large chasms or lakes
