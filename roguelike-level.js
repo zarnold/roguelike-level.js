@@ -49,20 +49,22 @@ function RoguelikeLevel(config) {
   // Convenient list of rooms
   this.world = null;
   this.rooms = [];
+  this.halls = [];
   this.doors = [];
   this.enter = null;
   this.exit = null;
 };
 
 RoguelikeLevel.prototype.build = function() {
-  this.world = this.createVoid();
-  this.addStarterRoom(world, room_list);
+  this.createVoid();
+  this.addStarterRoom();
   this.generateRooms();
   this.buildWalls();
 
   return {
     world: this.world,
     rooms: this.rooms,
+    halls: this.halls,
     doors: this.doors,
     enter: this.enter,
     exit: this.exit
@@ -90,13 +92,13 @@ RoguelikeLevel.prototype.addStarterRoom = function() {
   var height = random(this.room_min_height, this.room_max_height);
 
   var left = random(
-    this.max_width * 0.25 + width / 2,
-    this.max_width * 0.75 + width / 2
+    this.max_width * 0.25 - width / 2,
+    this.max_width * 0.75 - width / 2
   );
 
   var top = random(
-    this.max_height * 0.25 + height / 2,
-    this.max_height * 0.75 + height / 2
+    this.max_height * 0.25 - height / 2,
+    this.max_height * 0.75 - height / 2
   );
 
   this.addRoom(left, top, width, height);
@@ -112,7 +114,12 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
 
   for (var y = top; y < top+height; y++) {
     for (var x = left; x < left+width; x++) {
+      try {
       this.world[y][x] = TILE.FLOOR;
+      } catch(e) {
+        console.log(e);
+        console.log(x, y);
+      }
     }
   }
 };
@@ -127,7 +134,7 @@ RoguelikeLevel.prototype.addFloor = function(x, y) {
 RoguelikeLevel.prototype.generateRooms = function() {
   var retries = this.retry_count;
 
-  while(this.rooms.length < this.room.ideal_count) {
+  while(this.rooms.length < this.room_ideal_count) {
     if (!this.generateRoom() && --retries <= 0) {
       break;
     }
@@ -139,13 +146,46 @@ RoguelikeLevel.prototype.generateRooms = function() {
  */
 RoguelikeLevel.prototype.generateRoom = function() {
 
-  return true || false;
+  return false;
 };
 
 /**
  * Finds boundaries between floors and void, adding walls
  */
 RoguelikeLevel.prototype.buildWalls = function() {
+  var rooms = this.rooms;
+  var world = this.world;
+
+  // Do this for halls and rooms
+  for (var i = 0; i < this.rooms.length; i++) {
+    var room = rooms[i];
+
+    // Top Wall (Long)
+    for (var tx = room.left - 1; tx < room.left + room.width + 1; tx++) {
+      this.addWallIfVoid(tx, room.top - 1);
+    }
+
+    // Right Wall (Short)
+    for (var ry = room.top; ry < room.top + room.height; ry++) {
+      this.addWallIfVoid(room.left + room.width, ry);
+    }
+
+    // Bottom Wall (Long)
+    for (var bx = room.left - 1; bx < room.left + room.width + 1; bx++) {
+      this.addWallIfVoid(bx, room.top + room.height);
+    }
+
+    // Left Wall (Short)
+    for (var ly = room.top; ly < room.top + room.height; ly++) {
+      this.addWallIfVoid(room.left - 1, ly);
+    }
+  }
+};
+
+RoguelikeLevel.prototype.addWallIfVoid = function(x, y) {
+  if (this.world[y][x] === TILE.VOID) {
+    this.world[y][x] = TILE.WALL
+  }
 };
 
 module.exports = RoguelikeLevel;
