@@ -5,22 +5,28 @@
  */
 var RoguelikeLevel = require('./roguelike-level.js');
 
+var start = new Date();
+
 var level = new RoguelikeLevel({
   width: 69,
   height: 25,
-  retry: 10,
+  retry: 100,
   room: {
     ideal: 11,
     min_width: 3,
-    max_width: 9,
+    max_width: 7,
     min_height: 3,
-    max_height: 9
+    max_height: 7
   }
 });
 
 var result = level.build();
 
 var world = result.world;
+
+var end = new Date();
+
+console.log(JSON.stringify(result));
 
 // Crude mechanism for drawing level
 for (var y = 0; y < world.length; y++) {
@@ -33,9 +39,16 @@ for (var y = 0; y < world.length; y++) {
       row += '.';
     } else if (tile === 2) {
       row += '#';
+    } else if (tile === 3) {
+      row += '/';
     } else {
       row += world[y][x];
     }
   }
-  console.log(row);
+
+  console.log(row + '| ' + y);
 }
+
+console.log('-'.repeat(world[0].length) + '+');
+
+console.log('TIME TOOK: ' + ((end - start) / 1000) + 'ms');
