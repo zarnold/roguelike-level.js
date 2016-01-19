@@ -14,9 +14,9 @@ var level = new RoguelikeLevel({
   room: {
     ideal: 11,
     min_width: 3,
-    max_width: 7,
+    max_width: 9,
     min_height: 3,
-    max_height: 7
+    max_height: 9
   }
 });
 
@@ -41,6 +41,10 @@ for (var y = 0; y < world.length; y++) {
       row += '#';
     } else if (tile === 3) {
       row += '/';
+    } else if (tile === 5) {
+      row += '<';
+    } else if (tile === 6) {
+      row += '>';
     } else {
       row += world[y][x];
     }
