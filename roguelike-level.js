@@ -183,7 +183,8 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
     width: width,
     height: height,
     id: room_id,
-    neighbors: []
+    neighbors: [],
+    doors: []
   };
 
   for (var y = top; y < top+height; y++) {
@@ -475,6 +476,9 @@ RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
       room2
     ]
   };
+
+  this.rooms[room1].doors.push(door_id);
+  this.rooms[room2].doors.push(door_id);
 
   return door_id;
 }
