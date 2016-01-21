@@ -21,6 +21,10 @@ var DEFAULT = {
 
 var ROOM_GAP = 1;
 
+function shuffle(o){
+  for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+}
+
 /**
  * Pick a number between min and max, inclusive
  * e.g. 1,7 => 1,2,3,4,5,6,7
@@ -102,8 +106,9 @@ function RoguelikeLevel(config) {
 
   this.room_ideal_count = config.room.ideal || DEFAULT.IDEAL_COUNT;
   this.retry_count = config.retry || DEFAULT.IDEAL_COUNT;
+};
 
-  // Convenient list of rooms
+RoguelikeLevel.prototype.build = function() {
   this.world = null;
   this.rooms = {};
   this.doors = {};
@@ -112,9 +117,7 @@ function RoguelikeLevel(config) {
 
   this.room_id = 1;
   this.door_id = 1;
-};
 
-RoguelikeLevel.prototype.build = function() {
   this.createVoid();
   this.addStarterRoom();
   this.generateRooms();
@@ -179,7 +182,8 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
     top: top,
     width: width,
     height: height,
-    id: room_id
+    id: room_id,
+    neighbors: []
   };
 
   for (var y = top; y < top+height; y++) {
@@ -403,10 +407,29 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
   console.log('DOOR', x, y);
 
   this.addDoor(x, y, existing_room_id, new_room_id);
+
+  this.rooms[existing_room_id].neighbors.push(new_room_id);
+  this.rooms[new_room_id].neighbors.push(existing_room_id);
 };
 
+/**
+ * Add an entrance and exit to the level.
+ *
+ * We pick two random rooms with only a single attached neighbor.
+ * This ensures two adjacent rooms aren't entrance and exit.
+ */
 RoguelikeLevel.prototype.addEnterExit = function() {
-  var enter_room_id = randomOdd(1, this.room_id - 1);
+  var dead_ends = [];
+
+  for (var i = 1; i < this.room_id; i++) {
+    if (this.rooms[i].neighbors.length === 1) {
+      dead_ends.push(i);
+    }
+  }
+
+  shuffle(dead_ends);
+
+  var enter_room_id = dead_ends[0];
 
   var enter = this.randomNonEdgeInRoom(enter_room_id);
 
@@ -417,9 +440,7 @@ RoguelikeLevel.prototype.addEnterExit = function() {
     room_id: enter_room_id
   };
 
-  // Get a random room ID which isn't the same as the enterance
-  // We use Odd for both so the rooms aren't immediately adjacent
-  var exit_room_id = randomEven(1, this.room_id - 1);
+  var exit_room_id = dead_ends[1];
 
   var exit = this.randomNonEdgeInRoom(exit_room_id);
 
