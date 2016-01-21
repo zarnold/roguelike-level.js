@@ -130,6 +130,8 @@ RoguelikeLevel.prototype.build = function() {
     doors: this.doors,
     enter: this.enter,
     exit: this.exit,
+    width: this.max_width,
+    height: this.max_height,
     room_count: this.room_id - 1,
     door_count: this.door_id - 1
   };
