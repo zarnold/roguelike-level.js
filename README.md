@@ -2,7 +2,7 @@
 
 JavaScript function for creating a roguelike level.
 
-The concept is simple, inspired by sliding system used by [https://www.rockpapershotgun.com/2015/07/28/how-do-roguelikes-generate-levels/](Brogue).
+The concept is simple, inspired by sliding system used by [Brogue](https://www.rockpapershotgun.com/2015/07/28/how-do-roguelikes-generate-levels/).
 Random rooms are generated, and slid into the level in a random direction until they collide with an existing room.
 Once they collide a door is generated randomly in the colliding surface.
 We only generate rooms on odd rows and columns so that everything fits together perfectly.
