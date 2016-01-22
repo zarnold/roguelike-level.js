@@ -51,7 +51,7 @@ console.log(level);
 
 ## Example Output
 
-A typical level takes about **20ms** to generate on my laptop. YMMV.
+A typical level takes about **3ms** to generate on my laptop. YMMV.
 
 A **special** room can be used for whatever you want. I like to use them for shops and hidden rooms (you'll know when a door is special, too).
 
@@ -76,34 +76,34 @@ The `world` attribute is entirely optional for you to use. All the data within i
     "width": 17,
     "height": 11,
     "enter": {
-        "room_id": 2,
+        "room_id": 1,
         "x": 2,
         "y": 7
     },
     "exit": {
-        "room_id": 3,
+        "room_id": 2,
         "x": 8,
         "y": 8
     },
     "door_count": 3,
     "doors": {
-        "1": {
-            "id": 1,
-            "rooms": [ 1, 2 ],
+        "0": {
+            "id": 0,
+            "rooms": [ 0, 1 ],
             "special": false,
             "x": 4,
             "y": 5
         },
-        "2": {
-            "id": 2,
-            "rooms": [ 1, 3 ],
+        "1": {
+            "id": 1,
+            "rooms": [ 0, 2 ],
             "special": false,
             "x": 8,
             "y": 6
         },
-        "3": {
-            "id": 3,
-            "rooms": [ 1, 4 ],
+        "2": {
+            "id": 2,
+            "rooms": [ 0, 3 ],
             "special": true,
             "x": 12,
             "y": 4
@@ -111,42 +111,42 @@ The `world` attribute is entirely optional for you to use. All the data within i
     },
     "room_count": 4,
     "rooms": {
-        "1": {
-            "doors": [ 1, 2, 3 ],
+        "0": {
+            "doors": [ 0, 1, 2 ],
             "height": 5,
-            "id": 1,
+            "id": 0,
             "left": 5,
-            "neighbors": [ 2, 3, 4 ],
+            "neighbors": [ 1, 2, 3 ],
             "special": false,
             "top": 1,
             "width": 7
         },
-        "2": {
-            "doors": [ 1 ],
+        "1": {
+            "doors": [ 0 ],
             "height": 5,
-            "id": 2,
+            "id": 1,
             "left": 1,
-            "neighbors": [ 1 ],
+            "neighbors": [ 0 ],
             "special": false,
             "top": 5,
             "width": 3
         },
-        "3": {
-            "doors": [ 2 ],
+        "2": {
+            "doors": [ 1 ],
             "height": 3,
-            "id": 3,
+            "id": 2,
             "left": 7,
-            "neighbors": [ 1 ],
+            "neighbors": [ 0 ],
             "special": false,
             "top": 7,
             "width": 3
         },
-        "4": {
-            "doors": [ 3 ],
+        "3": {
+            "doors": [ 2 ],
             "height": 5,
-            "id": 4,
+            "id": 3,
             "left": 13,
-            "neighbors": [ 1 ],
+            "neighbors": [ 0 ],
             "special": true,
             "top": 3,
             "width": 3

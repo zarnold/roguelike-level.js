@@ -53,8 +53,8 @@ RoguelikeLevel.prototype.build = function() {
   this.exit = null;         // {x, y, room_id} object pointing to level exit
   this.special = null;      // {room_id, door_id} object pointing to special area
 
-  this.room_id = 1;
-  this.door_id = 1;
+  this.room_id = 0;
+  this.door_id = 0;
 
   this.createVoid();
   this.addStarterRoom();
@@ -67,9 +67,9 @@ RoguelikeLevel.prototype.build = function() {
     height: this.max_height,
     enter: this.enter,
     exit: this.exit,
-    door_count: this.door_id - 1,
+    door_count: this.door_id,
     doors: this.doors,
-    room_count: this.room_id - 1,
+    room_count: this.room_id,
     rooms: this.rooms,
     walls: this.walls,
     world: this.world
@@ -131,12 +131,7 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
 
   for (var y = top; y < top+height; y++) {
     for (var x = left; x < left+width; x++) {
-      try {
       this.world[y][x] = TILE.FLOOR;
-      } catch(e) {
-        console.log(e);
-        console.log(x, y);
-      }
     }
   }
 
@@ -153,7 +148,7 @@ RoguelikeLevel.prototype.addFloor = function(x, y) {
 RoguelikeLevel.prototype.generateRooms = function() {
   var retries = this.retry_count;
 
-  while(this.room_id - 1 < this.room_ideal_count) {
+  while(this.room_id < this.room_ideal_count) {
     if (!this.generateRoom() && --retries <= 0) {
       break;
     }
@@ -200,21 +195,20 @@ RoguelikeLevel.prototype.generateRoom = function() {
     left = this.max_width - dimen.width - ROOM_GAP;
   }
 
-  console.log("Adding a room. Sliding " + name + ". Dimensions are " + JSON.stringify(dimen) + ". Starting at top:" + top + ", left:" + left);
 
-  if (this.collides(top, left, dimen.width, dimen.height)) {
-    console.log('Bad Start!');
+  // Our start position for adding a room overlaps with an existing one :(
+  if (false !== this.collides(top, left, dimen.width, dimen.height)) {
     return false;
   }
 
   var collide_room = null;
 
-  while (!(collide_room = this.collides(top + y_dir, left + x_dir, dimen.width, dimen.height))) {
+  while (false === (collide_room = this.collides(top + y_dir, left + x_dir, dimen.width, dimen.height))) {
     top += y_dir;
     left += x_dir;
 
+    // We slid the room out of bounds of the world
     if (this.invalid(top, left, dimen.width, dimen.height)) {
-      console.log('Off screen!', top, left, dimen.width, dimen.height);
       return false;
     }
   }
@@ -234,7 +228,7 @@ RoguelikeLevel.prototype.collides = function(top, left, width, height) {
     height: height
   };
 
-  for (var i = 1; i < this.room_id; i++) {
+  for (var i = 0; i < this.room_id; i++) {
     var room = this.rooms[i];
 
     if (!(
@@ -277,7 +271,7 @@ RoguelikeLevel.prototype.buildWalls = function() {
   var world = this.world;
 
   // Do this for halls and rooms
-  for (var i = 1; i < this.room_id; i++) {
+  for (var i = 0; i < this.room_id; i++) {
     var room = rooms[i];
 
     // Top Wall (Long)
@@ -348,8 +342,6 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
     o = 'v'; // vertical
   }
 
-  console.log('DOOR', x, y);
-
   this.addDoor(x, y, existing_room_id, new_room_id);
 
   this.rooms[existing_room_id].neighbors.push(new_room_id);
@@ -373,7 +365,7 @@ RoguelikeLevel.prototype.addSpecialRooms = function() {
   };
 
   var room, area;
-  for (var i = 1; i < this.room_id; i++) {
+  for (var i = 0; i < this.room_id; i++) {
     room = this.rooms[i];
     if (room.neighbors.length === 1) {
       dead_ends.push(i);
