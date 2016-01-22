@@ -460,9 +460,12 @@ RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
   return door_id;
 }
 
-module.exports = RoguelikeLevel;
+module.exports = function(config) {
+  var level = new RoguelikeLevel(config);
+  return level.build();
+};
 
-function shuffle(o){
+function shuffle(o) {
   for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
 }
 
@@ -504,26 +507,6 @@ function randomOdd(min_raw, max_raw) {
 
   result *= 2;
   result += 1;
-
-  return result;
-}
-
-function randomEven(min_raw, max_raw) {
-  // Convert them to integers
-  var min = Math.floor(min_raw);
-  var max = Math.floor(max_raw);
-
-  // Make them both Odd
-  if (min % 2 === 1) min++;
-  if (max % 2 === 1) max--;
-
-  // Cut them in half
-  min /= 2;
-  max /= 2;
-
-  var result = Math.floor(Math.random() * (max + 1 - min) + min);
-
-  result *= 2;
 
   return result;
 }

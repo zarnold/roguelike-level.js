@@ -30,9 +30,9 @@ Of course you'd just want to import the main library and use it in your game.
 ## Example Usage
 
 ```javascript
-var RoguelikeLevel = require('./roguelike-level.js');
+var roguelikeLevelGen = require('./roguelike-level.js');
 
-var level = new RoguelikeLevel({
+var level = roguelikeLevelGen({
   width: 17, // Max Width of the world
   height: 11, // Max Height of the world
   retry: 100, // How many times should we try to add a room?
@@ -46,7 +46,7 @@ var level = new RoguelikeLevel({
   }
 });
 
-var result = level.build();
+console.log(level);
 ```
 
 ## Example Output
