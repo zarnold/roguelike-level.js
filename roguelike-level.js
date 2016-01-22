@@ -3,7 +3,7 @@ var TILE = {
   FLOOR: 1,
   WALL: 2,
   DOOR: 3,
-  CHASM: 4,
+  SPECIAL_DOOR: 4,
   ENTER: 5,
   EXIT: 6
 };
@@ -20,72 +20,6 @@ var DEFAULT = {
 };
 
 var ROOM_GAP = 1;
-
-function shuffle(o){
-  for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-}
-
-/**
- * Pick a number between min and max, inclusive
- * e.g. 1,7 => 1,2,3,4,5,6,7
- */
-function random(min_raw, max_raw) {
-  var min = Math.floor(min_raw);
-  var max = Math.floor(max_raw);
-
-  return Math.floor(Math.random() * (max + 1 - min) + min);
-}
-
-/**
- * Picks a random odd number between min and max, inclusive (if odd)
- * e.g. 2,9 => 3,5,7,9
- *
- * TODO: Make this a one-liner
- */
-function randomOdd(min_raw, max_raw) {
-  // Convert them to integers
-  var min = Math.floor(min_raw);
-  var max = Math.floor(max_raw);
-
-  // Make them both Odd
-  if (min % 2 === 0) min++;
-  if (max % 2 === 0) max--;
-
-  // Shift down one, make them even
-  min -= 1;
-  max -= 1;
-
-  // Cut them in half
-  min /= 2;
-  max /= 2;
-
-  var result = Math.floor(Math.random() * (max + 1 - min) + min);
-
-  result *= 2;
-  result += 1;
-
-  return result;
-}
-
-function randomEven(min_raw, max_raw) {
-  // Convert them to integers
-  var min = Math.floor(min_raw);
-  var max = Math.floor(max_raw);
-
-  // Make them both Odd
-  if (min % 2 === 1) min++;
-  if (max % 2 === 1) max--;
-
-  // Cut them in half
-  min /= 2;
-  max /= 2;
-
-  var result = Math.floor(Math.random() * (max + 1 - min) + min);
-
-  result *= 2;
-
-  return result;
-}
 
 function RoguelikeLevel(config) {
   if (!config) {
@@ -106,6 +40,8 @@ function RoguelikeLevel(config) {
 
   this.room_ideal_count = config.room.ideal || DEFAULT.IDEAL_COUNT;
   this.retry_count = config.retry || DEFAULT.IDEAL_COUNT;
+
+  this.has_special = !!config.special;
 };
 
 RoguelikeLevel.prototype.build = function() {
@@ -114,6 +50,7 @@ RoguelikeLevel.prototype.build = function() {
   this.doors = {};
   this.enter = null;
   this.exit = null;
+  this.special = null;
 
   this.room_id = 1;
   this.door_id = 1;
@@ -121,7 +58,7 @@ RoguelikeLevel.prototype.build = function() {
   this.createVoid();
   this.addStarterRoom();
   this.generateRooms();
-  this.addEnterExit();
+  this.addSpecialRooms();
   this.buildWalls();
 
   return {
@@ -185,6 +122,7 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
     width: width,
     height: height,
     id: room_id,
+    special: false,
     neighbors: [],
     doors: []
   };
@@ -418,16 +356,49 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
 /**
  * Add an entrance and exit to the level.
  *
+ * Optionally adds a special room (could be hidden, a shop, etc.)
+ *
  * We pick two random rooms with only a single attached neighbor.
  * This ensures two adjacent rooms aren't entrance and exit.
  */
-RoguelikeLevel.prototype.addEnterExit = function() {
+RoguelikeLevel.prototype.addSpecialRooms = function() {
   var dead_ends = [];
 
+  var smallest = {
+    id: null,
+    area: Infinity
+  };
+
+  var room, area;
   for (var i = 1; i < this.room_id; i++) {
-    if (this.rooms[i].neighbors.length === 1) {
+    room = this.rooms[i];
+    if (room.neighbors.length === 1) {
       dead_ends.push(i);
+
+      area = room.width * room.height;
+      if (area < smallest.area) {
+        smallest.id = i;
+      }
     }
+  }
+
+  if (this.has_special && dead_ends.length <= 2) {
+    console.error("Wanted to add a special room but not enough dead end rooms", dead_ends.length);
+  } else if (this.has_special) { // Enter + Exit + Special
+    var index = dead_ends.indexOf(smallest.id);
+    dead_ends.splice(index, 1);
+
+    var door_id = this.rooms[smallest.id].doors[0];
+    var room_id = smallest.id;
+    this.special = {
+      room_id: room_id,
+      door_id: door_id
+    };
+
+    var door = this.doors[door_id];
+    door.special = true;
+    this.rooms[room_id].special = true;
+    this.world[door.y][door.x] = TILE.SPECIAL_DOOR;
   }
 
   shuffle(dead_ends);
@@ -473,6 +444,7 @@ RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
     x: x,
     y: y,
     id: door_id,
+    special: false,
     rooms: [
       room1,
       room2
@@ -486,3 +458,69 @@ RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
 }
 
 module.exports = RoguelikeLevel;
+
+function shuffle(o){
+  for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+}
+
+/**
+ * Pick a number between min and max, inclusive
+ * e.g. 1,7 => 1,2,3,4,5,6,7
+ */
+function random(min_raw, max_raw) {
+  var min = Math.floor(min_raw);
+  var max = Math.floor(max_raw);
+
+  return Math.floor(Math.random() * (max + 1 - min) + min);
+}
+
+/**
+ * Picks a random odd number between min and max, inclusive (if odd)
+ * e.g. 2,9 => 3,5,7,9
+ *
+ * TODO: Make this a one-liner
+ */
+function randomOdd(min_raw, max_raw) {
+  // Convert them to integers
+  var min = Math.floor(min_raw);
+  var max = Math.floor(max_raw);
+
+  // Make them both Odd
+  if (min % 2 === 0) min++;
+  if (max % 2 === 0) max--;
+
+  // Shift down one, make them even
+  min -= 1;
+  max -= 1;
+
+  // Cut them in half
+  min /= 2;
+  max /= 2;
+
+  var result = Math.floor(Math.random() * (max + 1 - min) + min);
+
+  result *= 2;
+  result += 1;
+
+  return result;
+}
+
+function randomEven(min_raw, max_raw) {
+  // Convert them to integers
+  var min = Math.floor(min_raw);
+  var max = Math.floor(max_raw);
+
+  // Make them both Odd
+  if (min % 2 === 1) min++;
+  if (max % 2 === 1) max--;
+
+  // Cut them in half
+  min /= 2;
+  max /= 2;
+
+  var result = Math.floor(Math.random() * (max + 1 - min) + min);
+
+  result *= 2;
+
+  return result;
+}
