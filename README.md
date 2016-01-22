@@ -1,6 +1,6 @@
 # roguelike-level.js
 
-JavaScript function for creating a roguelike level.
+JavaScript CommonJS module for creating a roguelike level.
 
 The concept is simple, inspired by sliding system used by [Brogue](https://www.rockpapershotgun.com/2015/07/28/how-do-roguelikes-generate-levels/).
 Random rooms are generated, and slid into the level in a random direction until they collide with an existing room.
@@ -52,6 +52,10 @@ var result = level.build();
 ## Example Output
 
 A typical level takes about **20ms** to generate on my laptop. YMMV.
+
+A **special** room can be used for whatever you want. I like to use them for shops and hidden rooms (you'll know when a door is special, too).
+
+The `world` attribute is entirely optional for you to use. All the data within it can be recreated using the other attributes.
 
 ### World Matrix Cell Types
 
@@ -148,6 +152,12 @@ A typical level takes about **20ms** to generate on my laptop. YMMV.
             "width": 3
         }
     },
+    "walls": [
+      [4, 0],
+      [4, 1],
+      [4, 2],
+      [10, 10]
+    ],
     "world": [
         [ 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0 ],
         [ 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0 ],
@@ -163,6 +173,8 @@ A typical level takes about **20ms** to generate on my laptop. YMMV.
     ]
 }
 ```
+
+(Walls output is truncated)
 
 ## Caveats
 

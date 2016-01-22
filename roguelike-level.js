@@ -45,12 +45,13 @@ function RoguelikeLevel(config) {
 };
 
 RoguelikeLevel.prototype.build = function() {
-  this.world = null;
-  this.rooms = {};
-  this.doors = {};
-  this.enter = null;
-  this.exit = null;
-  this.special = null;
+  this.world = null;        // 2D array representing the world
+  this.rooms = {};          // Object containing rooms where the key is the Room ID
+  this.doors = {};          // Object containing doors where the key is the Door ID
+  this.walls = [];          // Array of all walls, where each items is an [X,Y] pair
+  this.enter = null;        // {x, y, room_id} object pointing to level entrance
+  this.exit = null;         // {x, y, room_id} object pointing to level exit
+  this.special = null;      // {room_id, door_id} object pointing to special area
 
   this.room_id = 1;
   this.door_id = 1;
@@ -62,15 +63,16 @@ RoguelikeLevel.prototype.build = function() {
   this.buildWalls();
 
   return {
-    world: this.world,
-    rooms: this.rooms,
-    doors: this.doors,
-    enter: this.enter,
-    exit: this.exit,
     width: this.max_width,
     height: this.max_height,
+    enter: this.enter,
+    exit: this.exit,
+    door_count: this.door_id - 1,
+    doors: this.doors,
     room_count: this.room_id - 1,
-    door_count: this.door_id - 1
+    rooms: this.rooms,
+    walls: this.walls,
+    world: this.world
   };
 };
 
@@ -303,6 +305,7 @@ RoguelikeLevel.prototype.buildWalls = function() {
 RoguelikeLevel.prototype.addWallIfVoid = function(x, y) {
   if (this.world[y][x] === TILE.VOID) {
     this.world[y][x] = TILE.WALL;
+    this.walls.push([x, y]);
   }
 };
 
