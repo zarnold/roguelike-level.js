@@ -307,7 +307,7 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
   var existing_room = this.rooms[existing_room_id];
   var new_room = this.rooms[new_room_id];
 
-  var x, y, o;
+  var x, y, orientation;
   if (x_dir === 1) {
     // eastward
     x = existing_room.left - 1;
@@ -315,7 +315,7 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
       Math.max(existing_room.top, new_room.top) + 1,
       Math.min(existing_room.top + existing_room.height, new_room.top + new_room.height) - 2
     );
-    o = 'h'; // horizontal
+    orientation = 'h'; // horizontal
   } else if (x_dir === -1) {
     // stabbing westward
     x = new_room.left - 1;
@@ -323,7 +323,7 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
       Math.max(new_room.top, existing_room.top) + 1,
       Math.min(new_room.top + new_room.height, existing_room.top + existing_room.height) - 2
     );
-    o = 'h'; // horizontal
+    orientation = 'h'; // horizontal
   } else if (y_dir === -1) {
     // northward
     x = random(
@@ -331,7 +331,7 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
       Math.min(existing_room.left + existing_room.width, new_room.left + new_room.width) - 2
     );
     y = new_room.top - 1;
-    o = 'v'; // vertical
+    orientation = 'v'; // vertical
   } else if (y_dir === 1) {
     // southward
     x = random(
@@ -339,10 +339,10 @@ RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_r
       Math.min(new_room.left + new_room.width, existing_room.left + existing_room.width) - 2
     );
     y = existing_room.top - 1;
-    o = 'v'; // vertical
+    orientation = 'v'; // vertical
   }
 
-  this.addDoor(x, y, existing_room_id, new_room_id);
+  this.addDoor(x, y, existing_room_id, new_room_id, orientation);
 
   this.rooms[existing_room_id].neighbors.push(new_room_id);
   this.rooms[new_room_id].neighbors.push(existing_room_id);
@@ -430,7 +430,7 @@ RoguelikeLevel.prototype.randomNonEdgeInRoom = function(room_id) {
   }
 };
 
-RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
+RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2, orientation) {
   this.world[y][x] = TILE.DOOR;
 
   var door_id = this.door_id++;
@@ -440,6 +440,7 @@ RoguelikeLevel.prototype.addDoor = function(x, y, room1, room2) {
     y: y,
     id: door_id,
     special: false,
+    orientation: orientation,
     rooms: [
       room1,
       room2
