@@ -125,6 +125,7 @@ RoguelikeLevel.prototype.addRoom = function(left, top, width, height) {
     height: height,
     id: room_id,
     special: false,
+    walls: [],
     neighbors: [],
     doors: []
   };
@@ -276,31 +277,35 @@ RoguelikeLevel.prototype.buildWalls = function() {
 
     // Top Wall (Long)
     for (var tx = room.left - 1; tx < room.left + room.width + 1; tx++) {
-      this.addWallIfVoid(tx, room.top - 1);
+      this.addWall(tx, room.top - 1, room);
     }
 
     // Right Wall (Short)
     for (var ry = room.top; ry < room.top + room.height; ry++) {
-      this.addWallIfVoid(room.left + room.width, ry);
+      this.addWall(room.left + room.width, ry, room);
     }
 
     // Bottom Wall (Long)
     for (var bx = room.left - 1; bx < room.left + room.width + 1; bx++) {
-      this.addWallIfVoid(bx, room.top + room.height);
+      this.addWall(bx, room.top + room.height, room);
     }
 
     // Left Wall (Short)
     for (var ly = room.top; ly < room.top + room.height; ly++) {
-      this.addWallIfVoid(room.left - 1, ly);
+      this.addWall(room.left - 1, ly, room);
     }
   }
 };
 
-RoguelikeLevel.prototype.addWallIfVoid = function(x, y) {
+RoguelikeLevel.prototype.addWall = function(x, y, room) {
+  // Walls should only appear once in the global walls list and world grid
   if (this.world[y][x] === TILE.VOID) {
     this.world[y][x] = TILE.WALL;
     this.walls.push([x, y]);
   }
+
+  // Duplicates for the same XY position will appear in different rooms
+  room.walls.push([x, y]);
 };
 
 RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_room_id, new_room_id) {
