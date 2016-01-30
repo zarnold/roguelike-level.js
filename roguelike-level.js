@@ -19,6 +19,9 @@ var DEFAULT = {
   RETRY_COUNT: 100
 };
 
+var WALL_X = 0;
+var WALL_Y = 1;
+
 var ROOM_GAP = 1;
 
 function RoguelikeLevel(config) {
@@ -41,7 +44,7 @@ function RoguelikeLevel(config) {
   this.room_ideal_count = config.room.ideal || DEFAULT.IDEAL_COUNT;
   this.retry_count = config.retry || DEFAULT.IDEAL_COUNT;
 
-  this.has_special = !!config.special;
+  this.want_special = !!config.special;
 };
 
 RoguelikeLevel.prototype.build = function() {
@@ -67,6 +70,7 @@ RoguelikeLevel.prototype.build = function() {
     height: this.max_height,
     enter: this.enter,
     exit: this.exit,
+    special: this.special,
     door_count: this.door_id,
     doors: this.doors,
     room_count: this.room_id,
@@ -95,15 +99,14 @@ RoguelikeLevel.prototype.createVoid = function() {
 RoguelikeLevel.prototype.addStarterRoom = function() {
   var dimen = this.getRoomDimensions();
 
-  var left = randomOdd(
-    this.max_width * 0.25 - dimen.width / 2,
-    this.max_width * 0.75 - dimen.width / 2
-  );
+  var min_left = ROOM_GAP;
+  var max_left = this.max_width - (dimen.width + ROOM_GAP * 2) + ROOM_GAP;
 
-  var top = randomOdd(
-    this.max_height * 0.25 - dimen.height / 2,
-    this.max_height * 0.75 - dimen.height / 2
-  );
+  var min_top = ROOM_GAP;
+  var max_top = this.max_height - (dimen.height + ROOM_GAP * 2) + ROOM_GAP;
+
+  var left = randomOdd(min_left, max_left);
+  var top = randomOdd(min_top, max_top);
 
   this.addRoom(left, top, dimen.width, dimen.height);
 }
@@ -178,21 +181,21 @@ RoguelikeLevel.prototype.generateRoom = function() {
     // Slide South from Top
     name = 'south';
     top = ROOM_GAP;
-    left = randomOdd(ROOM_GAP, this.max_width - dimen.width - ROOM_GAP);
+    left = randomOdd(ROOM_GAP, this.max_width - dimen.width - ROOM_GAP * 2);
   } else if (slide === 1) {
     // Slide East from Left
     name = 'east';
-    top = randomOdd(ROOM_GAP, this.max_height - dimen.height - ROOM_GAP);
+    top = randomOdd(ROOM_GAP, this.max_height - dimen.height - ROOM_GAP * 2);
     left = ROOM_GAP;
   } else if (slide === 2) {
     // Slide North from Bottom
     name = 'north';
     top = this.max_height - dimen.height - ROOM_GAP;
-    left = randomOdd(ROOM_GAP, this.max_width - dimen.width - ROOM_GAP);
+    left = randomOdd(ROOM_GAP, this.max_width - dimen.width - ROOM_GAP * 2);
   } else if (slide === 3) {
     // Slide West from Right
     name = 'west';
-    top = randomOdd(ROOM_GAP, this.max_height - dimen.height - ROOM_GAP);
+    top = randomOdd(ROOM_GAP, this.max_height - dimen.height - ROOM_GAP * 2);
     left = this.max_width - dimen.width - ROOM_GAP;
   }
 
@@ -304,8 +307,9 @@ RoguelikeLevel.prototype.addWall = function(x, y, room) {
     this.walls.push([x, y]);
   }
 
-  // Duplicates for the same XY position will appear in different rooms
-  room.walls.push([x, y]);
+  if (this.world[y][x] === TILE.VOID || this.world[y][x] === TILE.WALL) {
+    room.walls.push([x, y]);
+  }
 };
 
 RoguelikeLevel.prototype.addDoorBetweenRooms = function(x_dir, y_dir, existing_room_id, new_room_id) {
@@ -382,9 +386,7 @@ RoguelikeLevel.prototype.addSpecialRooms = function() {
     }
   }
 
-  if (this.has_special && dead_ends.length <= 2) {
-    console.error("Wanted to add a special room but not enough dead end rooms", dead_ends.length);
-  } else if (this.has_special) { // Enter + Exit + Special
+  if (this.want_special && dead_ends.length >= 2) { // Enter + Exit + Special
     var index = dead_ends.indexOf(smallest.id);
     dead_ends.splice(index, 1);
 
@@ -405,6 +407,10 @@ RoguelikeLevel.prototype.addSpecialRooms = function() {
 
   var enter_room_id = dead_ends[0];
 
+  if (typeof enter_room_id === 'undefined') {
+    throw new Error("Unable to find a dead end room for Enter!");
+  }
+
   var enter = this.randomNonEdgeInRoom(enter_room_id);
 
   this.world[enter.y][enter.x] = TILE.ENTER;
@@ -415,6 +421,10 @@ RoguelikeLevel.prototype.addSpecialRooms = function() {
   };
 
   var exit_room_id = dead_ends[1];
+
+  if (typeof exit_room_id === 'undefined') {
+    throw new Error("Unable to find a dead end room for Exit!");
+  }
 
   var exit = this.randomNonEdgeInRoom(exit_room_id);
 
